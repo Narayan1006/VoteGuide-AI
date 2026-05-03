@@ -1,5 +1,11 @@
 // src/components/VoterGuide/VoterGuide.jsx
-import { useState } from 'react';
+/**
+ * @fileoverview Tabbed Voter Guide container.
+ * Houses 5 sub-components: EligibilityChecker, RegistrationSteps,
+ * VotingDayChecklist, EVMDiagram, and NOTAInfo.
+ */
+import { useState }    from 'react';
+import PropTypes        from 'prop-types';
 import EligibilityChecker  from './EligibilityChecker';
 import RegistrationSteps   from './RegistrationSteps';
 import EVMDiagram          from './EVMDiagram';
@@ -14,6 +20,14 @@ const TABS = [
   { id: 'nota',          label: 'What is NOTA',    icon: '🚫', component: NOTAInfo },
 ];
 
+/**
+ * Tabbed voter guide with sections for eligibility, registration,
+ * voting day, EVM, and NOTA information.
+ *
+ * @param {Object}     props
+ * @param {'en'|'hi'} [props.language='en'] - Display language.
+ * @returns {JSX.Element}
+ */
 export default function VoterGuide({ language = 'en' }) {
   const [activeTab, setActiveTab] = useState('eligibility');
 
@@ -73,3 +87,7 @@ export default function VoterGuide({ language = 'en' }) {
     </section>
   );
 }
+
+VoterGuide.propTypes = {
+  language: PropTypes.oneOf(['en', 'hi']),
+};

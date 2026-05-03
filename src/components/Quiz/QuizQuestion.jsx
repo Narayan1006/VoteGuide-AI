@@ -1,7 +1,27 @@
 // src/components/Quiz/QuizQuestion.jsx
-import { useState } from 'react';
+/**
+ * @fileoverview Single MCQ question card with animated answer options.
+ * Highlights correct/incorrect answers after selection and displays an explanation.
+ */
+import { useState }  from 'react';
+import PropTypes     from 'prop-types';
 import { motion }   from 'framer-motion';
 
+/**
+ * Renders a single quiz question with four answer options.
+ * Locks all options once the user selects one and shows the explanation.
+ *
+ * @param {Object}      props
+ * @param {Object}      props.question            - Question data object.
+ * @param {string}      props.question.question   - Question text.
+ * @param {string[]}    props.question.options    - Array of 4 answer strings.
+ * @param {number}      props.question.correctIndex - Zero-based index of correct answer.
+ * @param {string}      props.question.explanation  - Explanation shown after answering.
+ * @param {string}      props.question.category     - Topic category label.
+ * @param {Function}    props.onAnswer             - Callback with selected index.
+ * @param {'en'|'hi'} [props.language='en']       - Display language.
+ * @returns {JSX.Element}
+ */
 export default function QuizQuestion({ question, onAnswer, language = 'en' }) {
   const [selected, setSelected] = useState(null);
 
@@ -71,3 +91,15 @@ export default function QuizQuestion({ question, onAnswer, language = 'en' }) {
     </div>
   );
 }
+
+QuizQuestion.propTypes = {
+  question: PropTypes.shape({
+    question:     PropTypes.string.isRequired,
+    options:      PropTypes.arrayOf(PropTypes.string).isRequired,
+    correctIndex: PropTypes.number.isRequired,
+    explanation:  PropTypes.string.isRequired,
+    category:     PropTypes.string,
+  }).isRequired,
+  onAnswer: PropTypes.func.isRequired,
+  language: PropTypes.oneOf(['en', 'hi']),
+};

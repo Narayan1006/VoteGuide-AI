@@ -1,9 +1,24 @@
 // src/components/Quiz/Leaderboard.jsx
+/**
+ * @fileoverview Firestore-backed top-10 quiz leaderboard.
+ * Fetches entries on mount, highlights the current user's entry,
+ * and renders medal icons for the top 3 positions.
+ */
 import { useState, useEffect } from 'react';
+import PropTypes               from 'prop-types';
 import { useFirestore }        from '@hooks/useFirestore';
 
 const MEDALS = ['🥇', '🥈', '🥉'];
 
+/**
+ * Displays the top 10 quiz leaderboard fetched from Firestore.
+ * Highlights the current user's row and shows medal emojis for positions 1–3.
+ *
+ * @param {Object}       props
+ * @param {'en'|'hi'}  [props.language='en']    - Display language for labels.
+ * @param {string|null} [props.currentUserId]    - UID of the authenticated user (for highlighting).
+ * @returns {JSX.Element}
+ */
 export default function Leaderboard({ language = 'en', currentUserId }) {
   const [entries,  setEntries]  = useState([]);
   const [loading,  setLoading]  = useState(true);
@@ -79,3 +94,8 @@ export default function Leaderboard({ language = 'en', currentUserId }) {
     </div>
   );
 }
+
+Leaderboard.propTypes = {
+  language:      PropTypes.oneOf(['en', 'hi']),
+  currentUserId: PropTypes.string,
+};

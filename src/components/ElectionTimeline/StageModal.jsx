@@ -1,6 +1,12 @@
 // src/components/ElectionTimeline/StageModal.jsx
-import { forwardRef }        from 'react';
-import { motion }            from 'framer-motion';
+/**
+ * @fileoverview Accessible modal dialog for election timeline stage details.
+ * Displays key points, dates, and a Gemini AI-generated explanation.
+ * Traps focus via ref and supports Escape key dismissal.
+ */
+import { forwardRef } from 'react';
+import PropTypes      from 'prop-types';
+import { motion }     from 'framer-motion';
 
 const StageModal = forwardRef(function StageModal(
   { stage, aiExplanation, isLoadingAI, language, onClose },
@@ -123,5 +129,24 @@ const StageModal = forwardRef(function StageModal(
     </motion.div>
   );
 });
+
+StageModal.propTypes = {
+  stage: PropTypes.shape({
+    id:          PropTypes.number.isRequired,
+    title:       PropTypes.string.isRequired,
+    subtitle:    PropTypes.string.isRequired,
+    date:        PropTypes.string.isRequired,
+    description: PropTypes.string.isRequired,
+    icon:        PropTypes.string.isRequired,
+    keyPoints:   PropTypes.arrayOf(PropTypes.string).isRequired,
+    bgColor:     PropTypes.string.isRequired,
+    textColor:   PropTypes.string.isRequired,
+    borderColor: PropTypes.string.isRequired,
+  }).isRequired,
+  aiExplanation: PropTypes.string,
+  isLoadingAI:   PropTypes.bool.isRequired,
+  language:      PropTypes.oneOf(['en', 'hi']).isRequired,
+  onClose:       PropTypes.func.isRequired,
+};
 
 export default StageModal;

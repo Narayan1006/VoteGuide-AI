@@ -1,14 +1,27 @@
 // src/components/Quiz/Quiz.jsx
-import { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence }           from 'framer-motion';
-import { getQuizQuestions }                  from '@data/quizQuestions';
-import { useFirestore }                      from '@hooks/useFirestore';
-import { useAuth }                           from '@hooks/useAuth';
-import QuizQuestion                          from './QuizQuestion';
-import QuizResult                            from './QuizResult';
-import Leaderboard                           from './Leaderboard';
-import toast                                 from 'react-hot-toast';
+/**
+ * @fileoverview Election knowledge quiz with 5 random MCQs per session.
+ * Manages quiz state machine (intro → quiz → result → leaderboard),
+ * persists scores to Firestore, and updates daily streak counters.
+ */
+import { useState, useCallback }  from 'react';
+import PropTypes                   from 'prop-types';
+import { motion, AnimatePresence } from 'framer-motion';
+import { getQuizQuestions }        from '@data/quizQuestions';
+import { useFirestore }            from '@hooks/useFirestore';
+import { useAuth }                 from '@hooks/useAuth';
+import QuizQuestion                from './QuizQuestion';
+import QuizResult                  from './QuizResult';
+import Leaderboard                 from './Leaderboard';
+import toast                       from 'react-hot-toast';
 
+/**
+ * Election knowledge quiz component with session state machine.
+ *
+ * @param {Object}     props
+ * @param {'en'|'hi'} [props.language='en'] - Display language for UI and result messages.
+ * @returns {JSX.Element}
+ */
 export default function Quiz({ language = 'en' }) {
   const [questions,    setQuestions]    = useState([]);
   const [currentIdx,   setCurrentIdx]   = useState(0);
@@ -187,3 +200,8 @@ export default function Quiz({ language = 'en' }) {
     </section>
   );
 }
+
+Quiz.propTypes = {
+  /** Display language — 'en' for English, 'hi' for Hindi */
+  language: PropTypes.oneOf(['en', 'hi']),
+};

@@ -1,5 +1,10 @@
 // src/components/Quiz/QuizResult.jsx
-import { motion } from 'framer-motion';
+/**
+ * @fileoverview Quiz result screen showing score, performance message,
+ * answer review, and save-to-leaderboard action.
+ */
+import PropTypes    from 'prop-types';
+import { motion }  from 'framer-motion';
 
 const MESSAGES = [
   { min: 5, icon: '🏆', en: 'Perfect Score! You\'re an election expert!', hi: 'परफेक्ट स्कोर! आप चुनाव विशेषज्ञ हैं!' },
@@ -8,6 +13,21 @@ const MESSAGES = [
   { min: 0, icon: '📚', en: 'Keep practicing! Visit the Voter Guide to learn more.', hi: 'अभ्यास जारी रखें! मतदाता गाइड देखें।' },
 ];
 
+/**
+ * Displays the quiz result with score breakdown, answer review, and leaderboard save option.
+ *
+ * @param {Object}    props
+ * @param {number}    props.score        - Number of correct answers.
+ * @param {number}    props.total        - Total number of questions.
+ * @param {Object[]}  props.questions    - Array of question objects.
+ * @param {Object[]}  props.answers      - Array of user answer objects.
+ * @param {'en'|'hi'} props.language     - Display language.
+ * @param {Function}  props.onPlayAgain  - Callback to restart the quiz.
+ * @param {Function}  props.onSaveScore  - Callback to save score to Firestore.
+ * @param {boolean}   props.submitted    - Whether score has already been saved.
+ * @param {boolean}   props.isLoggedIn   - Whether the user is authenticated.
+ * @returns {JSX.Element}
+ */
 export default function QuizResult({ score, total, questions, answers, language, onPlayAgain, onSaveScore, submitted, isLoggedIn }) {
   const pct = Math.round((score / total) * 100);
   const msg = MESSAGES.find(m => score >= m.min) || MESSAGES[MESSAGES.length - 1];
@@ -99,3 +119,15 @@ export default function QuizResult({ score, total, questions, answers, language,
     </div>
   );
 }
+
+QuizResult.propTypes = {
+  score:       PropTypes.number.isRequired,
+  total:       PropTypes.number.isRequired,
+  questions:   PropTypes.arrayOf(PropTypes.object).isRequired,
+  answers:     PropTypes.arrayOf(PropTypes.object).isRequired,
+  language:    PropTypes.oneOf(['en', 'hi']).isRequired,
+  onPlayAgain: PropTypes.func.isRequired,
+  onSaveScore: PropTypes.func.isRequired,
+  submitted:   PropTypes.bool.isRequired,
+  isLoggedIn:  PropTypes.bool.isRequired,
+};

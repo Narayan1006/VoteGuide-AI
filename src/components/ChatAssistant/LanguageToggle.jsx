@@ -1,4 +1,18 @@
 // src/components/ChatAssistant/LanguageToggle.jsx
+/**
+ * @fileoverview Language toggle button for switching between English and Hindi
+ * in the AI chat assistant.
+ */
+import PropTypes from 'prop-types';
+
+/**
+ * Toggle button that switches the chat response language between EN and HI.
+ *
+ * @param {Object}    props
+ * @param {'en'|'hi'} props.language  - Currently active language.
+ * @param {Function}  props.onToggle  - Callback to toggle the language.
+ * @returns {JSX.Element}
+ */
 export default function LanguageToggle({ language, onToggle }) {
   return (
     <button
@@ -15,3 +29,8 @@ export default function LanguageToggle({ language, onToggle }) {
     </button>
   );
 }
+
+LanguageToggle.propTypes = {
+  language: PropTypes.oneOf(['en', 'hi']).isRequired,
+  onToggle: PropTypes.func.isRequired,
+};

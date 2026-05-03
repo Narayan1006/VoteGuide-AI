@@ -1,7 +1,21 @@
 // src/components/VoterGuide/EligibilityChecker.jsx
-import { useState } from 'react';
+/**
+ * @fileoverview Voter eligibility checker form.
+ * Validates age (18+) and Indian citizenship with accessible error messages
+ * and animated result cards showing pass/fail for each requirement.
+ */
+import { useState }              from 'react';
+import PropTypes                 from 'prop-types';
 import { motion, AnimatePresence } from 'framer-motion';
 
+/**
+ * Voter eligibility checker — validates age and citizenship criteria
+ * for Indian elections and shows an accessible result card.
+ *
+ * @param {Object}     props
+ * @param {'en'|'hi'} [props.language='en'] - Display language for form labels and results.
+ * @returns {JSX.Element}
+ */
 export default function EligibilityChecker({ language = 'en' }) {
   const [age,         setAge]         = useState('');
   const [isCitizen,   setIsCitizen]   = useState(null);
@@ -222,3 +236,8 @@ export default function EligibilityChecker({ language = 'en' }) {
     </div>
   );
 }
+
+EligibilityChecker.propTypes = {
+  /** Display language — 'en' for English, 'hi' for Hindi */
+  language: PropTypes.oneOf(['en', 'hi']),
+};

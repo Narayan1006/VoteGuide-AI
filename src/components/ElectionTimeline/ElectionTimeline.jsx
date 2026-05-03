@@ -1,10 +1,23 @@
 // src/components/ElectionTimeline/ElectionTimeline.jsx
+/**
+ * @fileoverview Interactive 6-stage Indian election process timeline.
+ * Each stage card opens a modal with AI-powered explanations via Gemini.
+ */
 import { useState, useEffect, useRef } from 'react';
+import PropTypes                        from 'prop-types';
 import { motion, AnimatePresence }      from 'framer-motion';
 import { ELECTION_STAGES }             from '@data/timelineData';
 import { explainTimelineStage }        from '@services/geminiService';
 import StageModal                      from './StageModal';
 
+/**
+ * Renders the interactive election timeline with clickable stage cards
+ * that trigger AI-powered explanations in a modal dialog.
+ *
+ * @param {Object}       props
+ * @param {'en'|'hi'}   [props.language='en'] - Display language for labels and AI prompts.
+ * @returns {JSX.Element}
+ */
 export default function ElectionTimeline({ language = 'en' }) {
   const [activeStage,   setActiveStage]   = useState(null);
   const [aiExplanation, setAiExplanation] = useState('');
@@ -168,3 +181,8 @@ export default function ElectionTimeline({ language = 'en' }) {
     </section>
   );
 }
+
+ElectionTimeline.propTypes = {
+  /** Display language — 'en' for English, 'hi' for Hindi */
+  language: PropTypes.oneOf(['en', 'hi']),
+};

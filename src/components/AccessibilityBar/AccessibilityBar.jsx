@@ -1,6 +1,17 @@
 // src/components/AccessibilityBar/AccessibilityBar.jsx
+/**
+ * @fileoverview WCAG 2.1 AA accessibility controls toolbar.
+ * Provides font size adjustment (small/medium/large), high contrast toggle,
+ * and a skip-to-main-content link. State managed via useAccessibility hook.
+ */
 import { useAccessibility } from '@hooks/useAccessibility';
 
+/**
+ * Sticky accessibility toolbar rendered above the navbar.
+ * Provides keyboard-accessible controls for font size and contrast.
+ *
+ * @returns {JSX.Element}
+ */
 export default function AccessibilityBar() {
   const {
     fontSize,

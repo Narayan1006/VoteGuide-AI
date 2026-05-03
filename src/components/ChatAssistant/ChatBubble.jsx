@@ -1,5 +1,10 @@
 // src/components/ChatAssistant/ChatBubble.jsx
-import { memo } from 'react';
+/**
+ * @fileoverview Memoized chat message bubble for user and AI messages.
+ * Renders markdown bold/newlines, timestamps, and per-role avatars.
+ */
+import PropTypes from 'prop-types';
+import { memo }  from 'react';
 
 // Simple markdown-to-text formatter for bold and bullets
 function formatContent(text) {
@@ -10,6 +15,19 @@ function formatContent(text) {
   return withBold.replace(/\n/g, '<br />');
 }
 
+/**
+ * Renders a single chat message as a styled bubble.
+ * Sanitizes AI output via innerHTML with only bold/br allowed.
+ *
+ * @param {Object}  props
+ * @param {Object}  props.message           - Chat message object.
+ * @param {string}  props.message.id        - Unique message identifier.
+ * @param {string}  props.message.role      - 'user' or 'assistant'.
+ * @param {string}  props.message.content   - Message text content.
+ * @param {string}  props.message.timestamp - ISO timestamp string.
+ * @param {boolean} [props.message.isError] - Whether this is an error message.
+ * @returns {JSX.Element}
+ */
 const ChatBubble = memo(function ChatBubble({ message }) {
   const isUser = message.role === 'user';
   const isError = message.isError;
@@ -71,5 +89,15 @@ const ChatBubble = memo(function ChatBubble({ message }) {
     </div>
   );
 });
+
+ChatBubble.propTypes = {
+  message: PropTypes.shape({
+    id:        PropTypes.string.isRequired,
+    role:      PropTypes.oneOf(['user', 'assistant']).isRequired,
+    content:   PropTypes.string.isRequired,
+    timestamp: PropTypes.string.isRequired,
+    isError:   PropTypes.bool,
+  }).isRequired,
+};
 
 export default ChatBubble;

@@ -1,8 +1,14 @@
 // src/components/BoothLocator/BoothLocator.jsx
-import { useState, useCallback, useRef } from 'react';
-import { GoogleMap, LoadScript, Marker, InfoWindow } from '@react-google-maps/api';
+/**
+ * @fileoverview Google Maps-powered polling booth locator for Indian cities.
+ * Supports city search, geolocation, interactive markers, and InfoWindows.
+ * Falls back to a placeholder when VITE_GOOGLE_MAPS_API_KEY is not configured.
+ */
+import { useState, useCallback, useRef }             from 'react';
+import PropTypes                                       from 'prop-types';
+import { GoogleMap, LoadScript, Marker, InfoWindow }  from '@react-google-maps/api';
 import { MOCK_BOOTHS, getNearbyBooths, searchBoothsByCity } from '@data/boothData';
-import toast from 'react-hot-toast';
+import toast                                          from 'react-hot-toast';
 
 const MAP_CONTAINER_STYLE = { width: '100%', height: '450px' };
 const DEFAULT_CENTER      = { lat: 20.5937, lng: 78.9629 }; // Center of India
@@ -22,6 +28,14 @@ const MAP_OPTIONS = {
   zoomControl: true,
 };
 
+/**
+ * Interactive booth locator with Google Maps integration.
+ * Displays mock polling booth data for 10 major Indian cities.
+ *
+ * @param {Object}     props
+ * @param {'en'|'hi'} [props.language='en'] - Language for UI labels and toasts.
+ * @returns {JSX.Element}
+ */
 export default function BoothLocator({ language = 'en' }) {
   const [center,         setCenter]         = useState(DEFAULT_CENTER);
   const [zoom,           setZoom]           = useState(5);
@@ -253,3 +267,8 @@ export default function BoothLocator({ language = 'en' }) {
     </section>
   );
 }
+
+BoothLocator.propTypes = {
+  /** Display language — 'en' for English, 'hi' for Hindi */
+  language: PropTypes.oneOf(['en', 'hi']),
+};

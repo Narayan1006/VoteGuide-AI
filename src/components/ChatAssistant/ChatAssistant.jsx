@@ -1,4 +1,9 @@
 // src/components/ChatAssistant/ChatAssistant.jsx
+/**
+ * @fileoverview Floating AI chat widget powered by Gemini 1.5 Flash.
+ * Supports bilingual (Hindi/English) conversations, suggested questions,
+ * DOMPurify input sanitization, keyboard accessibility, and Firestore history.
+ */
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence }                  from 'framer-motion';
 import { useGemini }                                from '@hooks/useGemini';
@@ -8,6 +13,12 @@ import TypingIndicator                              from './TypingIndicator';
 import LanguageToggle                               from './LanguageToggle';
 import DOMPurify                                    from 'dompurify';
 
+/**
+ * Self-contained floating chat assistant widget.
+ * Manages its own open/close state and delegates AI calls to useGemini.
+ *
+ * @returns {JSX.Element} Floating button + animated chat panel
+ */
 export default function ChatAssistant() {
   const [isOpen,      setIsOpen]      = useState(false);
   const [inputValue,  setInputValue]  = useState('');
