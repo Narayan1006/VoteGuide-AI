@@ -1,17 +1,38 @@
 // src/services/geminiService.js
+/**
+ * @fileoverview Gemini 1.5 Flash API client for VoteGuide AI.
+ * Provides rate-limited, sanitized access to the Gemini generative AI model.
+ * Exposes chat messaging and single-prompt timeline explanation functions.
+ *
+ * @module geminiService
+ */
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import DOMPurify              from 'dompurify';
 
 // ----------------------------------------------------------------
 // Rate Limiter — Token Bucket (max 20 requests/minute)
 // ----------------------------------------------------------------
+/**
+ * Token-bucket rate limiter that enforces a maximum number of
+ * API requests within a rolling time window.
+ */
 class RateLimiter {
+  /**
+   * @param {number} maxRequests - Maximum allowed requests per window.
+   * @param {number} windowMs    - Rolling window size in milliseconds.
+   */
   constructor(maxRequests = 20, windowMs = 60_000) {
     this.maxRequests = maxRequests;
     this.windowMs    = windowMs;
     this.requests    = [];
   }
 
+  /**
+   * Checks whether a new request is allowed under the current rate limit.
+   * Records the request timestamp if allowed.
+   *
+   * @returns {boolean} True if the request is permitted.
+   */
   canMakeRequest() {
     const now = Date.now();
     this.requests = this.requests.filter(t => now - t < this.windowMs);
@@ -20,12 +41,22 @@ class RateLimiter {
     return true;
   }
 
+  /**
+   * Returns the number of remaining requests in the current window.
+   *
+   * @returns {number} Remaining request count (0 or more).
+   */
   getRemainingRequests() {
     const now = Date.now();
     this.requests = this.requests.filter(t => now - t < this.windowMs);
     return Math.max(0, this.maxRequests - this.requests.length);
   }
 
+  /**
+   * Returns the number of seconds until the rate limit window resets.
+   *
+   * @returns {number} Seconds until reset, or 0 if no requests recorded.
+   */
   getResetTime() {
     if (this.requests.length === 0) return 0;
     const oldest = Math.min(...this.requests);
@@ -33,6 +64,7 @@ class RateLimiter {
   }
 }
 
+/** @type {RateLimiter} Shared rate limiter instance — max 20 requests/minute */
 export const rateLimiter = new RateLimiter(
   parseInt(import.meta?.env?.VITE_GEMINI_RATE_LIMIT || '20'),
   60_000
@@ -75,15 +107,26 @@ If asked about something unrelated to elections or voting, politely redirect:
 let genAI = null;
 let model = null;
 
+/**
+ * Returns the lazily-initialised Gemini model instance.
+ * Validates the API key before constructing the client.
+ *
+ * @returns {import('@google/generative-ai').GenerativeModel} The configured Gemini model.
+ * @throws {Error} If VITE_GEMINI_API_KEY is missing or not yet configured.
+ */
 function getModel() {
   if (!model) {
     const apiKey = import.meta?.env?.VITE_GEMINI_API_KEY;
     if (!apiKey || apiKey === 'your_gemini_api_key_here') {
-      throw new Error('GEMINI_API_KEY not configured. Please add it to your .env file.');
+      throw new Error(
+        'VITE_GEMINI_API_KEY is not configured. ' +
+        'Add your Gemini API key to the .env file. ' +
+        'Get a free key at https://aistudio.google.com/app/apikey'
+      );
     }
     genAI = new GoogleGenerativeAI(apiKey);
     model = genAI.getGenerativeModel({
-      model:          'gemini-1.5-flash',
+      model:             'gemini-1.5-flash',
       systemInstruction: SYSTEM_PROMPT,
       generationConfig: {
         maxOutputTokens: 1024,
@@ -99,17 +142,26 @@ function getModel() {
 // ----------------------------------------------------------------
 // Sanitize user input to prevent XSS
 // ----------------------------------------------------------------
+/**
+ * Sanitizes user-provided text to prevent XSS injection.
+ * Falls back to a regex-based approach in non-browser environments (e.g. tests).
+ *
+ * @param {string} text - Raw user input.
+ * @returns {string} Sanitized plain-text string, capped at 2000 characters.
+ */
 function sanitizeInput(text) {
   if (typeof window !== 'undefined' && DOMPurify) {
     return DOMPurify.sanitize(text, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
   }
-  // Fallback for non-browser env
   return text.replace(/<[^>]*>/g, '').substring(0, 2000);
 }
 
-// ----------------------------------------------------------------
-// Convert our message format to Gemini history format
-// ----------------------------------------------------------------
+/**
+ * Converts the internal message format to the Gemini API history format.
+ *
+ * @param {Array<{role: string, content: string}>} messages - Internal message array.
+ * @returns {Array<{role: 'user'|'model', parts: [{text: string}]}>} Gemini history format.
+ */
 function toGeminiHistory(messages) {
   return messages
     .filter(m => m.role !== 'system')
@@ -119,9 +171,15 @@ function toGeminiHistory(messages) {
     }));
 }
 
-// ----------------------------------------------------------------
-// Main send function
-// ----------------------------------------------------------------
+/**
+ * Sends a user message to Gemini with full conversation history and returns the AI response.
+ *
+ * @param {Array<{role: string, content: string}>} history - Previous messages for context.
+ * @param {string} userMessage - The user's current message.
+ * @param {'en'|'hi'} [language='en'] - Preferred response language.
+ * @returns {Promise<{content: string, role: 'assistant', timestamp: string}>} AI response object.
+ * @throws {Error} On rate limit, invalid API key, safety block, or network failure.
+ */
 export async function sendMessage(history = [], userMessage, language = 'en') {
   // Rate limiting check
   if (!rateLimiter.canMakeRequest()) {
@@ -180,9 +238,18 @@ export async function sendMessage(history = [], userMessage, language = 'en') {
 // ----------------------------------------------------------------
 // Get a stage explanation from AI (for Timeline modals)
 // ----------------------------------------------------------------
+/**
+ * Generates a concise AI explanation for a specific election timeline stage.
+ * Used by the ElectionTimeline component's stage detail modals.
+ *
+ * @param {string} stageName - Name of the election stage (e.g. 'Election Announcement').
+ * @param {'en'|'hi'} [language='en'] - Language for the explanation.
+ * @returns {Promise<string>} Formatted markdown explanation text.
+ * @throws {Error} If rate limited or the API call fails.
+ */
 export async function explainTimelineStage(stageName, language = 'en') {
   if (!rateLimiter.canMakeRequest()) {
-    throw new Error('Rate limit reached');
+    throw new Error('Rate limit reached. Please wait before requesting another explanation.');
   }
 
   try {
@@ -195,7 +262,7 @@ export async function explainTimelineStage(stageName, language = 'en') {
     const response = await result.response;
     return response.text();
   } catch (error) {
-    throw new Error('Failed to get AI explanation');
+    throw new Error(`Failed to get AI explanation for "${stageName}": ${error.message}`);
   }
 }
 

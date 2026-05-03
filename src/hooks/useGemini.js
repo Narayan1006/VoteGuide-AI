@@ -1,8 +1,15 @@
 // src/hooks/useGemini.js
+/**
+ * @fileoverview Custom React hook for managing Gemini AI chat state.
+ * Handles message history, language toggling, error states,
+ * and optional Firestore conversation persistence.
+ */
+
 import { useState, useCallback, useRef } from 'react';
 import { sendMessage as geminiSend }     from '@services/geminiService';
 import { useFirestore }                  from './useFirestore';
 
+/** @type {import('../types').ChatMessage[]} */
 const INITIAL_MESSAGES = [
   {
     id:        'welcome',
@@ -20,6 +27,21 @@ const INITIAL_MESSAGES = [
   },
 ];
 
+/**
+ * Custom hook for Gemini AI chat management.
+ *
+ * @param {string|null} userId - Authenticated Firebase user ID, or null for anonymous sessions.
+ * @returns {{
+ *   messages: import('../types').ChatMessage[],
+ *   isLoading: boolean,
+ *   error: string|null,
+ *   language: 'en'|'hi',
+ *   sendMessage: (input: string) => Promise<void>,
+ *   toggleLanguage: () => void,
+ *   clearChat: () => void,
+ *   setLanguage: (lang: 'en'|'hi') => void,
+ * }}
+ */
 export function useGemini(userId = null) {
   const [messages,   setMessages]   = useState(INITIAL_MESSAGES);
   const [isLoading,  setIsLoading]  = useState(false);
@@ -29,6 +51,13 @@ export function useGemini(userId = null) {
 
   const { saveConversation } = useFirestore(userId);
 
+  /**
+   * Sends a user message to Gemini and appends the AI response.
+   * Saves the updated conversation to Firestore if user is authenticated.
+   *
+   * @param {string} userInput - The user's message text.
+   * @returns {Promise<import('../types').ChatMessage|undefined>} The AI response message.
+   */
   const sendMessage = useCallback(async (userInput) => {
     if (!userInput?.trim() || isLoading) return;
 
@@ -50,7 +79,7 @@ export function useGemini(userId = null) {
       // Build history (exclude welcome message from history sent to API)
       const historyForAPI = updatedMessages
         .filter(m => m.id !== 'welcome')
-        .slice(-10) // Keep last 10 messages for context
+        .slice(-10) // Keep last 10 messages for context window
         .map(m => ({ role: m.role, content: m.content }));
 
       const aiResponse = await geminiSend(historyForAPI, userInput, language);
@@ -65,9 +94,11 @@ export function useGemini(userId = null) {
       const finalMessages = [...updatedMessages, aiMsg];
       setMessages(finalMessages);
 
-      // Save conversation to Firestore if user is authenticated
+      // Persist conversation to Firestore if user is authenticated
       if (userId) {
-        saveConversation(sessionId.current, finalMessages).catch(console.error);
+        saveConversation(sessionId.current, finalMessages).catch(() => {
+          // Silently fail — conversation persistence is non-critical
+        });
       }
 
       return aiMsg;
@@ -88,10 +119,16 @@ export function useGemini(userId = null) {
     }
   }, [messages, isLoading, language, userId, saveConversation]);
 
+  /**
+   * Toggles the response language between English and Hindi.
+   */
   const toggleLanguage = useCallback(() => {
     setLanguage(prev => prev === 'en' ? 'hi' : 'en');
   }, []);
 
+  /**
+   * Resets the conversation to the initial welcome message.
+   */
   const clearChat = useCallback(() => {
     setMessages(INITIAL_MESSAGES);
     sessionId.current = `session_${Date.now()}`;

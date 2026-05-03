@@ -1,7 +1,12 @@
 // src/components/common/Navbar.jsx
-import { useState } from 'react';
-import { NavLink, Link } from 'react-router-dom';
-import { useAuth }       from '@hooks/useAuth';
+/**
+ * @fileoverview Sticky navigation bar with Google Sign-In, dark mode toggle,
+ * mobile hamburger menu, and route-aware active link highlighting.
+ */
+import { useState }       from 'react';
+import PropTypes           from 'prop-types';
+import { NavLink, Link }  from 'react-router-dom';
+import { useAuth }        from '@hooks/useAuth';
 
 const NAV_LINKS = [
   { to: '/',          label: 'Home',     icon: '🏠' },
@@ -11,7 +16,7 @@ const NAV_LINKS = [
   { to: '/quiz',      label: 'Quiz',     icon: '🧠' },
 ];
 
-export default function Navbar({ darkMode, onToggleDarkMode }) {
+function Navbar({ darkMode, onToggleDarkMode }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const { user, signInWithGoogle, signOut, loading } = useAuth();
 
@@ -151,3 +156,12 @@ export default function Navbar({ darkMode, onToggleDarkMode }) {
     </nav>
   );
 }
+
+Navbar.propTypes = {
+  /** Whether dark mode is currently active */
+  darkMode:        PropTypes.bool.isRequired,
+  /** Callback to toggle between dark and light mode */
+  onToggleDarkMode: PropTypes.func.isRequired,
+};
+
+export default Navbar;
